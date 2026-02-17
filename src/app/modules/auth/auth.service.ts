@@ -1,5 +1,6 @@
 import { UserStatus } from "../../../generated/prisma/enums";
 import { auth } from "../../lib/auth";
+import { prisma } from "../../lib/prisma";
 
 interface IRegisterPatientPayload {
     name: string;
@@ -23,8 +24,39 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
         throw new Error("Failed tore register patient")
     }
 
+    if (data.user.status === UserStatus.BLOCKED) {
+        throw new Error("User is Blocked");
+    }
 
-    return data;
+    if (data.user.isDeleted || data.user.status === UserStatus.DELETED) {
+        throw new Error("User is Deleted");
+    }
+
+    try {
+        const patient = await prisma.$transaction(async (tx) => {
+            const patientTx = await tx.patient.create({
+                data: {
+                    userId: data.user.id,
+                    name: payload.name,
+                    email: payload.email
+                }
+            })
+            return patientTx;
+        })
+
+        return {
+            ...data,
+            patient
+        }
+    } catch (error) {
+        console.log("Transaction error:", error);
+        await prisma.user.delete({
+            where: {
+                id: data.user.id
+            }
+        })
+        throw error;
+    }
 }
 
 interface ILoginPatientPayload {
@@ -42,12 +74,12 @@ const loginUser = async (payload: ILoginPatientPayload) => {
         }
     })
 
-    if(data.user.status === UserStatus.BLOCKED){
+    if (data.user.status === UserStatus.BLOCKED) {
         throw new Error("User is Blocked");
     }
 
-    if(data.user.isDeleted || data.user.status === UserStatus.DELETED){
-          throw new Error("User is Deleted");
+    if (data.user.isDeleted || data.user.status === UserStatus.DELETED) {
+        throw new Error("User is Deleted");
     }
 
     return data;

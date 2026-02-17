@@ -1,6 +1,8 @@
-import express, { Application, Request, Response } from "express";
+import express, { Application, NextFunction, Request, Response } from "express";
 import { IndexRoutes } from "./app/routes";
 import { AuthRoutes } from "./app/modules/auth/auth.route";
+import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
+import { notFount } from "./app/middleware/notFound";
 
 const app: Application = express();
 
@@ -15,5 +17,7 @@ app.get('/', (req: Request, res: Response) => {
     res.send('Hello, TypeScript + Express!');
 });
 
+app.use(globalErrorHandler);
+app.use(notFount)
 
 export default app;
