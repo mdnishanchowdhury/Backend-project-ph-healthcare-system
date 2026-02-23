@@ -1,11 +1,11 @@
 import { CookieOptions, Request, Response } from "express";
 
-const setCookie = (res: Response, key: string, value: string, option: CookieOptions) => {
-    res.cookie(key, value, option)
+const setCookie = (res: Response, key: string, value: string, options: CookieOptions) => {
+    res.cookie(key, value, options);
 }
 
 const getCookie = (req: Request, key: string) => {
-    return req.cookies[key]
+    return req.cookies[key];
 }
 
 const clearCookie = (res: Response, key: string, options: CookieOptions) => {
@@ -15,5 +15,5 @@ const clearCookie = (res: Response, key: string, options: CookieOptions) => {
 export const CookieUtils = {
     setCookie,
     getCookie,
-    clearCookie
+    clearCookie,
 }
