@@ -62,9 +62,9 @@ export const checkAuth = (...authRoles: Role[]) => async (req: Request, res: Res
                 }
 
                 req.user = {
-                    userId : user.id,
-                    role : user.role,
-                    email : user.email,
+                    userId: user.id,
+                    role: user.role,
+                    email: user.email,
                 }
             }
 
@@ -84,7 +84,7 @@ export const checkAuth = (...authRoles: Role[]) => async (req: Request, res: Res
             throw new AppError(status.UNAUTHORIZED, 'Unauthorized access! No access token provided.');
         }
 
-        const verifiedToken = jwtUtils.verifyToken(accessToken, envVars.ACCESS_TOKEM_SECRET);
+        const verifiedToken = jwtUtils.verifyToken(accessToken, envVars.ACCESS_TOKEN_SECRET);
 
         if (!verifiedToken.success) {
             throw new AppError(status.UNAUTHORIZED, 'Unauthorized access! Invalid access token.');
