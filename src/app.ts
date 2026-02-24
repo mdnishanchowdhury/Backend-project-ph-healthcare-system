@@ -33,6 +33,7 @@ app.use("/api/auth", toNodeHandler(auth))
 app.use("/api/v1/auth", AuthRoutes);
 app.use("/api/v1", IndexRoutes);
 
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello, TypeScript + Express!');
