@@ -1,24 +1,46 @@
 import status from "http-status";
+import { Doctor, Prisma } from "../../../generated/prisma/client";
 import { UserStatus } from "../../../generated/prisma/enums";
+import { IQueryParams } from "../../interfaces/query.interface";
 import { prisma } from "../../lib/prisma";
-import { IUpdateDoctorPayload } from "./doctor.interdace";
+import { doctorFilterableFields, doctorIncludeConfig, doctorSearchableFields } from "./doctor.constant";
+import { IUpdateDoctorPayload } from "./doctor.interface";
+import { QueryBuilder } from "../../utils/QueryBuilder";
 import AppError from "../../../errorHelpers/AppError";
 
-const getAllDoctors = async () => {
-    const doctors = await prisma.doctor.findMany({
-        where: {
+// /doctors?specialty=cardiology&include=doctorSchedules,appointments
+const getAllDoctors = async (query: IQueryParams) => {
+
+    const queryBuilder = new QueryBuilder<Doctor, Prisma.DoctorWhereInput, Prisma.DoctorInclude>(
+        prisma.doctor,
+        query,
+        {
+            searchableFields: doctorSearchableFields,
+            filterableFields: doctorFilterableFields,
+        }
+    )
+
+    const result = await queryBuilder
+        .search()
+        .filter()
+        .where({
             isDeleted: false,
-        },
-        include: {
+        })
+        .include({
             user: true,
+            // specialties: true,
             specialties: {
                 include: {
                     specialty: true
                 }
-            }
-        }
-    })
-    return doctors;
+            },
+        })
+        .dynamicInclude(doctorIncludeConfig)
+        .paginate()
+        .sort()
+        .fields()
+        .execute();
+    return result;
 }
 
 const getDoctorById = async (id: string) => {
@@ -138,7 +160,7 @@ const deleteDoctor = async (id: string) => {
             data: {
                 isDeleted: true,
                 deletedAt: new Date(),
-                status: UserStatus.DELETED // Optional: you may also want to block the user
+                status: UserStatus.DELETED 
             },
         })
 
