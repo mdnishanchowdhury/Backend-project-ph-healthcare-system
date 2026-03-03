@@ -7,6 +7,7 @@ import { envVars } from "../config/env";
 import { TErrorResponse, TErrorSources } from "../interfaces/error.interface";
 import AppError from "../../errorHelpers/AppError";
 import { handleZodError } from "../../errorHelpers/handlerZodError";
+import { deleteUploadedFilesFromGlobalErrorHandler } from "../utils/deleteUploadedFilesFromGlobalErrorHandler";
 
 
 
@@ -24,6 +25,8 @@ export const globalErrorHandler = async (err: any, req: Request, res: Response, 
         const imageUrls = req.files.map((file) => file.path);
         await Promise.all(imageUrls.map(url => deleteFileFromCloudinary(url))); 
     }
+
+       await deleteUploadedFilesFromGlobalErrorHandler(req);
 
     let errorSources: TErrorSources[] = []
     let statusCode: number = status.INTERNAL_SERVER_ERROR;
